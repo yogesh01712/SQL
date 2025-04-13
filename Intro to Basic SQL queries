@@ -1,0 +1,109 @@
+SQL (Structured Query Language) is used to interact with relational databases. It allows you to:
+	•	Query data using SELECT
+	•	Filter with WHERE
+	•	Sort with ORDER BY
+	•	Group and aggregate with GROUP BY
+	•	Modify data using INSERT, UPDATE, DELETE
+	•	Manage tables with TRUNCATE, DROP, CREATE, etc..
+
+📋 Sample Table – employees
+
+Let’s use this example table:
+emp_id	name	department	salary	hire_date
+1	Alice	HR	50000	2021-01-15
+2	Bob	IT	70000	2020-11-01
+3	Charlie	IT	65000	2019-07-10
+4	Diana	Finance	60000	2022-03-05
+5	Ethan	HR	52000	2023-06-25
+
+
+🔎 1. SELECT Statement
+Used to fetch data from a table.
+
+-- Get all columns
+SELECT * FROM employees;
+
+-- Get specific columns
+SELECT name, department FROM employees;
+
+🔍 2. WHERE Clause
+
+Used to filter records.
+
+-- Employees in IT department
+SELECT * FROM employees
+WHERE department = 'IT';
+
+-- Employees with salary > 60000
+SELECT * FROM employees
+WHERE salary > 60000;
+
+
+🔢 3. ORDER BY Clause
+
+Used to sort results.
+
+-- Sort by salary ascending
+SELECT * FROM employees
+ORDER BY salary ASC;
+
+-- Sort by hire date descending
+SELECT * FROM employees
+ORDER BY hire_date DESC;
+
+📊 4. GROUP BY Clause + Aggregation
+
+Used to group records and apply aggregate functions like SUM(), AVG(), COUNT().
+
+-- Average salary by department
+SELECT department, AVG(salary) AS avg_salary
+FROM employees
+GROUP BY department;
+
+-- Count of employees in each department
+SELECT department, COUNT(*) AS emp_count
+FROM employees
+GROUP BY department;
+
+🔄 5. INSERT Statement
+
+Used to add new rows.
+
+-- Insert a new employee
+INSERT INTO employees (emp_id, name, department, salary, hire_date)
+VALUES (6, 'Frank', 'Finance', 58000, '2024-01-20');
+
+📝 6. UPDATE Statement
+
+Used to modify existing data.
+
+-- Increase salary of employee with emp_id = 2
+UPDATE employees
+SET salary = 75000
+WHERE emp_id = 2;
+
+❌ 7. DELETE Statement
+
+Used to delete rows.
+
+-- Remove employee with emp_id = 5
+DELETE FROM employees
+WHERE emp_id = 5;
+
+🧹 8. TRUNCATE Statement
+
+Used to delete all rows in a table, quickly and permanently (no rollback).
+
+TRUNCATE TABLE employees;
+
+📌 Summary Table
+
+SQL Command	Purpose
+SELECT	Fetch data from a table
+WHERE	Filter rows based on a condition
+ORDER BY	Sort result set
+GROUP BY	Group rows and aggregate
+INSERT	Add new row
+UPDATE	Modify existing row
+DELETE	Remove row(s)
+TRUNCATE	Remove all rows (fast)
