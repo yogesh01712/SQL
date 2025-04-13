@@ -1,0 +1,159 @@
+Perfect! Let’s go through both concepts step-by-step and explain every query clearly with real-world context.
+
+✅ COMMON TABLE EXPRESSIONS (CTE)
+
+🔹 What is a CTE?
+
+A CTE (Common Table Expression) is a temporary result set that you can reference within the execution of a single SQL statement.
+
+💡 Syntax:
+
+WITH cte_name AS (
+  SELECT ...
+)
+SELECT * FROM cte_name;
+
+CTEs are:
+	•	Easy to read and maintain
+	•	Helpful for modularizing complex queries
+	•	Often used for recursive operations (like hierarchies)
+
+🔸 1. Simple CTE
+
+WITH HighEarners AS (
+    SELECT emp_id, name, salary
+    FROM employees
+    WHERE salary > 60000
+)
+SELECT * FROM HighEarners;
+
+📘 Explanation:
+	•	Creates a temporary view HighEarners for employees earning more than 60,000.
+	•	The outer query selects from this temporary view.
+	•	Makes the query modular and reusable.
+
+🔸 2. Recursive CTE
+
+WITH RECURSIVE EmployeeHierarchy AS (
+    SELECT emp_id, name, manager_id, 1 AS level
+    FROM employees
+    WHERE manager_id IS NULL
+    UNION ALL
+    SELECT e.emp_id, e.name, e.manager_id, eh.level + 1
+    FROM employees e
+    INNER JOIN EmployeeHierarchy eh ON e.manager_id = eh.emp_id
+)
+SELECT * FROM EmployeeHierarchy;
+
+📘 Explanation:
+	•	Used to build a reporting hierarchy from the employees table.
+	•	Starts from employees with no manager (level = 1).
+	•	Recursively finds employees reporting to others and increases their level.
+	•	Very useful in organizational charts, BOM trees, etc.
+
+✅ WINDOW FUNCTIONS
+
+🔹 What are Window Functions?
+
+Window functions perform calculations across a set of rows related to the current row without collapsing rows like aggregate functions do.
+
+💡 Syntax:
+
+FUNCTION_NAME(...) OVER (
+  PARTITION BY column
+  ORDER BY column
+)
+
+You can:
+	•	Rank rows
+	•	Access previous/next values
+	•	Calculate running totals, averages, etc.
+
+🔸 1. ROW_NUMBER()
+
+SELECT emp_id, name, department_id,
+       ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS row_num
+FROM employees;
+
+📘 Explanation:
+	•	Ranks employees within their department by salary (highest = 1).
+	•	No ties: Every row gets a unique number.
+
+🔸 2. RANK()
+
+SELECT emp_id, name, department_id,
+       RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS dept_rank
+FROM employees;
+
+📘 Explanation:
+	•	Similar to ROW_NUMBER(), but gives same rank to tied salaries.
+	•	If two people share Rank 1, next one will be Rank 3.
+
+🔸 3. DENSE_RANK()
+
+SELECT emp_id, name, department_id,
+       DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS dense_rank
+FROM employees;
+
+📘 Explanation:
+	•	Like RANK(), but no gaps in ranking.
+	•	If two employees share Rank 1, next is Rank 2.
+
+🔸 4. NTILE(n)
+
+SELECT emp_id, name, salary,
+       NTILE(4) OVER (ORDER BY salary DESC) AS salary_quartile
+FROM employees;
+
+📘 Explanation:
+	•	Divides rows into n tiles or buckets.
+	•	Here: Divides all employees into 4 salary quartiles (top 25%, next 25%, etc.).
+
+🔸 5. LAG() and LEAD()
+
+SELECT emp_id, name, salary,
+       LAG(salary) OVER (ORDER BY salary) AS previous_salary,
+       LEAD(salary) OVER (ORDER BY salary) AS next_salary
+FROM employees;
+
+📘 Explanation:
+	•	LAG() gets the previous row’s salary
+	•	LEAD() gets the next row’s salary
+	•	Useful for comparisons over time, trends, etc.
+
+🔸 6. FIRST_VALUE() and LAST_VALUE()
+
+SELECT emp_id, name, salary,
+       FIRST_VALUE(name) OVER (ORDER BY salary DESC) AS top_earner,
+       LAST_VALUE(name) OVER (
+         ORDER BY salary DESC 
+         ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+       ) AS bottom_earner
+FROM employees;
+
+📘 Explanation:
+	•	FIRST_VALUE() returns top earning name in each window
+	•	LAST_VALUE() requires frame adjustment (default window is bounded)
+	•	Useful for comparing with highest/lowest in window
+
+🔸 7. Aggregate Window Functions
+
+SELECT emp_id, name, department_id, salary,
+       SUM(salary) OVER (PARTITION BY department_id) AS dept_salary_total,
+       AVG(salary) OVER (PARTITION BY department_id) AS dept_avg_salary,
+       MIN(salary) OVER (PARTITION BY department_id) AS dept_min_salary,
+       MAX(salary) OVER (PARTITION BY department_id) AS dept_max_salary,
+       COUNT(*) OVER (PARTITION BY department_id) AS dept_emp_count
+FROM employees;
+
+📘 Explanation:
+	•	Computes aggregates over a window without collapsing rows.
+	•	Very useful in reporting dashboards, department summaries, etc.
+
+✅ Final Thoughts
+
+Feature	CTE	Window Function
+Purpose	Modular sub-query	Calculate across rows (non-aggregating)
+Keeps rows intact	✅ Yes	✅ Yes
+Use case examples	Tree structures, complex logic	Ranking, comparisons, cumulative metrics
+Syntax starts with	WITH	OVER(PARTITION BY ...)
