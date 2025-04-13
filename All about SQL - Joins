@@ -1,0 +1,209 @@
+Let’s dive into a complete and professional guide to all possible SQL JOIN types, including:
+	•	INNER JOIN
+	•	LEFT JOIN
+	•	RIGHT JOIN
+	•	FULL OUTER JOIN
+	•	CROSS JOIN
+	•	SELF JOIN
+	•	NON-EQUI JOIN (also known as range or inequality join)
+
+We’ll use realistic HR and Sales datasets, define meaningful columns, and show queries with examples and results.
+
+📁 Sample Tables with Column Descriptions
+
+🔹 Table 1: employees
+
+Column	Data Type	Description
+emp_id	INT	Primary Key – Unique employee ID
+name	VARCHAR	Full name of employee
+department_id	INT	FK to departments.department_id
+job_title	VARCHAR	Job role/title
+salary	DECIMAL	Monthly salary
+manager_id	INT	FK to another employee’s emp_id (self join)
+hire_date	DATE	Date of joining
+
+🔹 Table 2: departments
+
+Column	Data Type	Description
+department_id	INT	Primary Key – Unique ID
+department_name	VARCHAR	Name of the department
+location	VARCHAR	City where the department is located
+
+🔹 Table 3: sales_targets
+
+Column	Data Type	Description
+target_range_id	INT	Primary Key
+min_sales	DECIMAL	Minimum sales amount for the range
+max_sales	DECIMAL	Maximum sales amount for the range
+bonus_percent	DECIMAL	Bonus % to be awarded
+
+-- DROP TABLES IF THEY EXIST
+DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS sales_targets;
+
+-- CREATE departments TABLE
+CREATE TABLE departments (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(100),
+    location VARCHAR(100)
+);
+
+-- INSERT INTO departments
+INSERT INTO departments (department_id, department_name, location) VALUES
+(101, 'Finance', 'New York'),
+(102, 'IT', 'Chicago'),
+(103, 'Sales', 'Miami'),
+(104, 'HR', 'Dallas');
+
+departments
+
+dept_id	department_name	location
+101	Finance	New York
+102	IT	Chicago
+103	Sales	Miami
+104	HR	Dallas
+
+
+-- CREATE employees TABLE
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    department_id INT,
+    job_title VARCHAR(100),
+    salary DECIMAL(10,2),
+    manager_id INT,
+    hire_date DATE,
+    FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+
+-- INSERT INTO employees
+INSERT INTO employees (emp_id, name, department_id, job_title, salary, manager_id, hire_date) VALUES
+(1, 'Alice', 101, 'Analyst', 55000.00, NULL, '2020-01-10'),
+(2, 'Bob', 102, 'Developer', 70000.00, 1, '2021-03-22'),
+(3, 'Charlie', 101, 'Analyst', 60000.00, 1, '2019-07-12'),
+(4, 'Diana', NULL, 'Intern', 30000.00, 2, '2022-06-01'),
+(5, 'Ethan', 103, 'Sales Exec', 80000.00, 3, '2023-05-05');
+
+employees
+
+emp_id	name	dept_id	job_title	salary	manager_id	hire_date
+1	Alice	101	Analyst	55000	NULL	2020-01-10
+2	Bob	102	Developer	70000	1	2021-03-22
+3	Charlie	101	Analyst	60000	1	2019-07-12
+4	Diana	NULL	Intern	30000	2	2022-06-01
+5	Ethan	103	Sales Exec	80000	3	2023-05-05
+
+
+-- CREATE sales_targets TABLE
+CREATE TABLE sales_targets (
+    target_range_id INT PRIMARY KEY,
+    min_sales DECIMAL(10,2),
+    max_sales DECIMAL(10,2),
+    bonus_percent DECIMAL(5,2)
+);
+
+-- INSERT INTO sales_targets
+INSERT INTO sales_targets (target_range_id, min_sales, max_sales, bonus_percent) VALUES
+(1, 0.00, 49999.00, 0),
+(2, 50000.00, 69999.00, 5),
+(3, 70000.00, 89999.00, 10);
+
+sales_targets
+
+target_range_id	min_sales	max_sales	bonus_percent
+1	0	49999	0
+2	50000	69999	5
+3	70000	89999	10
+
+🧠 JOIN TYPES WITH EXAMPLES
+
+1. 🔗 INNER JOIN
+
+Returns records that have matching values in both tables.
+
+SELECT e.name, d.department_name
+FROM employees e
+INNER JOIN departments d
+  ON e.department_id = d.department_id;
+
+📌 Matches employees with their departments.
+
+2. ⬅️ LEFT JOIN (LEFT OUTER JOIN)
+
+Returns all records from the left table, and matched records from the right table.
+
+SELECT e.name, d.department_name
+FROM employees e
+LEFT JOIN departments d
+  ON e.department_id = d.department_id;
+
+📌 Includes employees even if no department is assigned (e.g., interns or new hires).
+
+3. ➡️ RIGHT JOIN (RIGHT OUTER JOIN)
+
+Returns all records from the right table, and matched records from the left.
+
+SELECT e.name, d.department_name
+FROM employees e
+RIGHT JOIN departments d
+  ON e.department_id = d.department_id;
+
+📌 Includes departments even if no employee is assigned.
+
+4. 🔄 FULL OUTER JOIN
+
+Returns all records when there is a match in either table.
+
+SELECT e.name, d.department_name
+FROM employees e
+FULL OUTER JOIN departments d
+  ON e.department_id = d.department_id;
+
+📌 Combines results of LEFT and RIGHT JOIN.
+
+5. 🔃 CROSS JOIN
+
+Returns a Cartesian product — all combinations of rows between tables.
+
+SELECT e.name, d.department_name
+FROM employees e
+CROSS JOIN departments d;
+
+📌 For 5 employees and 4 departments, this gives 5 × 4 = 20 rows.
+
+6. 🔁 SELF JOIN
+
+A table joined to itself — useful for organizational hierarchy.
+
+SELECT e.name AS employee, m.name AS manager
+FROM employees e
+LEFT JOIN employees m
+  ON e.manager_id = m.emp_id;
+
+📌 Lists each employee with their manager’s name.
+
+7. 🧮 NON-EQUI JOIN (Range-based Join)
+
+A join based on inequality condition (>, <, BETWEEN, etc.), not =.
+
+Use Case: Match employees’ salaries to bonus slabs in sales_targets.
+
+SELECT e.name, e.salary, s.bonus_percent
+FROM employees e
+JOIN sales_targets s
+  ON e.salary BETWEEN s.min_sales AND s.max_sales;
+
+📌 Assigns bonus percentage based on salary range — common in incentive systems.
+
+
+🧾 Summary of JOIN Types
+
+JOIN Type	Use Case
+INNER JOIN	Matching rows in both tables
+LEFT JOIN	All from left + matched from right
+RIGHT JOIN	All from right + matched from left
+FULL OUTER JOIN	All from both, matched and unmatched
+CROSS JOIN	All combinations of rows
+SELF JOIN	Compare rows within same table (e.g., manager)
+NON-EQUI JOIN	Use inequality conditions (e.g., ranges)
